@@ -9,7 +9,7 @@ import 'react-bootstrap-table2-paginator/dist/react-bootstrap-table2-paginator.m
 function DataList() {
     const [dataLists, setDataLists] = useState([]);
     const [page, setPage] = useState(1);
-    const [perPage, setperPage] = useState(80);
+    const [perPage, setperPage] = useState(10);
 
     const columns = [
         { dataField: 'id', text: 'Id' },
@@ -23,7 +23,7 @@ function DataList() {
     ];
 
     const pagination = paginationFactory({
-        page: 1,
+        page: page,
         sizePerPage: 10,
         lastPageText: '>>',
         firstPageText: '<<',
@@ -31,13 +31,26 @@ function DataList() {
         prePageText: '<',
         showTotal: true,
         alwaysShowAllBtns: true,
-        onPageChange: function (page, perPage) {
-            console.log("Page", page);
-            console.log("PerPage", perPage);
+        totalSize: 80,
+        onPageChange: function (pageNum, recordPerPage) {
+            fetch(`https://api.punkapi.com/v2/beers?page=${pageNum}&per_page=${recordPerPage}`)
+                .then(res => res.json())
+                .then(result => {
+                    setDataLists(result);
+                    setPage(pageNum);
+                    setperPage(recordPerPage);
+                })
+                .catch(err => console.log(err));
         },
-        onSizePerPageChange: function (page, perPage) {
-            console.log("Page", page);
-            console.log("PerPage", perPage);
+        onSizePerPageChange: function (recordPerPage, page) {
+            fetch(`https://api.punkapi.com/v2/beers?page=${page}&per_page=${recordPerPage}`)
+                .then(res => res.json())
+                .then(result => {
+                    setDataLists(result);
+                    setPage(page);
+                    setperPage(recordPerPage);
+                })
+                .catch(err => console.log(err));
         }
     });
 
@@ -48,10 +61,10 @@ function DataList() {
             .then(res => res.json())
             .then(result => setDataLists(result))
             .catch(err => console.log(err));
-    }, []);
+    }, [page]);
 
     return <div>
-        <BootstrapTable keyField='id' columns={columns} data={dataLists} pagination={pagination} filter={filterFactory()} />
+        <BootstrapTable bootstrap4 keyField='id' columns={columns} data={dataLists} pagination={pagination} filter={filterFactory()} />
     </div>
 }
 
